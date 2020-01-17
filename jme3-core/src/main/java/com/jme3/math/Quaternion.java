@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2018 jMonkeyEngine
+ * Copyright (c) 2009-2019 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1279,6 +1279,29 @@ public final class Quaternion implements Savable, Cloneable, java.io.Serializabl
         }
         return true;
     }
+    
+    /**
+     * Returns true if this quaternion is similar to the specified quaternion
+     * within some value of epsilon.
+     */
+    public boolean isSimilar(Quaternion other, float epsilon) {
+        if (other == null) {
+            return false;
+        }
+        if (Float.compare(Math.abs(other.x - x), epsilon) > 0) {
+            return false;
+        }
+        if (Float.compare(Math.abs(other.y - y), epsilon) > 0) {
+            return false;
+        }
+        if (Float.compare(Math.abs(other.z - z), epsilon) > 0) {
+            return false;
+        }
+        if (Float.compare(Math.abs(other.w - w), epsilon) > 0) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * 
@@ -1348,13 +1371,14 @@ public final class Quaternion implements Savable, Cloneable, java.io.Serializabl
      *            a vector indicating the local up direction.
      *            (typically {0, 1, 0} in jME.)
      */
-    public void lookAt(Vector3f direction, Vector3f up) {
+    public Quaternion lookAt(Vector3f direction, Vector3f up) {
         TempVars vars = TempVars.get();
         vars.vect3.set(direction).normalizeLocal();
         vars.vect1.set(up).crossLocal(direction).normalizeLocal();
         vars.vect2.set(direction).crossLocal(vars.vect1).normalizeLocal();
         fromAxes(vars.vect1, vars.vect2, vars.vect3);
         vars.release();
+        return this;
     }
 
     public void write(JmeExporter e) throws IOException {

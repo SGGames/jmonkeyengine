@@ -32,7 +32,6 @@
 package jme3test.light.pbr;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.bounding.BoundingSphere;
 import com.jme3.environment.EnvironmentCamera;
 import com.jme3.environment.LightProbeFactory;
 import com.jme3.environment.generation.JobProgressAdapter;
@@ -91,8 +90,12 @@ public class TestPBRLighting extends SimpleApplication {
         dl.setColor(ColorRGBA.White);
         rootNode.attachChild(modelNode);
 
-
         FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+        int numSamples = context.getSettings().getSamples();
+        if (numSamples > 0) {
+            fpp.setNumSamples(numSamples);
+        }
+
 //        fpp.addFilter(new FXAAFilter());
         fpp.addFilter(new ToneMapFilter(Vector3f.UNIT_XYZ.mult(4.0f)));
 //        fpp.addFilter(new SSAOFilter(0.5f, 3, 0.2f, 0.2f));

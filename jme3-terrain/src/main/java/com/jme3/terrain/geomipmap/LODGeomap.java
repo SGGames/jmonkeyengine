@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 jMonkeyEngine
+ * Copyright (c) 2009-2019 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,9 +45,8 @@ import com.jme3.terrain.GeoMap;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.TempVars;
 import java.io.IOException;
-import java.nio.Buffer;
-import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -82,12 +81,7 @@ public class LODGeomap extends GeoMap {
         FloatBuffer pb = writeVertexArray(null, scale, center);
         FloatBuffer texb = writeTexCoordArray(null, tcOffset, tcScale, offsetAmount, totalSize);
         FloatBuffer nb = writeNormalArray(null, scale);
-        Buffer ib;
-        IndexBuffer idxB = writeIndexArrayLodDiff(lod, rightLod, topLod, leftLod, bottomLod, totalSize);
-        if (idxB.getBuffer() instanceof IntBuffer)
-            ib = (IntBuffer)idxB.getBuffer();
-        else
-            ib = (ShortBuffer)idxB.getBuffer();
+        IndexBuffer ib = writeIndexArrayLodDiff(lod, rightLod, topLod, leftLod, bottomLod, totalSize);
         FloatBuffer bb = BufferUtils.createFloatBuffer(getWidth() * getHeight() * 3);
         FloatBuffer tanb = BufferUtils.createFloatBuffer(getWidth() * getHeight() * 3);
         writeTangentArray(nb, tanb, bb, texb, scale);
@@ -98,10 +92,17 @@ public class LODGeomap extends GeoMap {
         m.setBuffer(Type.Tangent, 3, tanb);
         m.setBuffer(Type.Binormal, 3, bb);
         m.setBuffer(Type.TexCoord, 2, texb);
-        if (ib instanceof IntBuffer)
-            m.setBuffer(Type.Index, 3, (IntBuffer)ib);
-        else if (ib instanceof ShortBuffer)
-            m.setBuffer(Type.Index, 3, (ShortBuffer)ib);
+        switch (ib.getFormat()) {
+            case UnsignedInt:
+                m.setBuffer(Type.Index, 3, (IntBuffer) ib.getBuffer());
+                break;
+            case UnsignedShort:
+                m.setBuffer(Type.Index, 3, (ShortBuffer) ib.getBuffer());
+                break;
+            case UnsignedByte:
+                m.setBuffer(Type.Index, 3, (ByteBuffer) ib.getBuffer());
+                break;
+        }
         m.setStatic();
         m.updateBound();
         return m;
@@ -149,7 +150,6 @@ public class LODGeomap extends GeoMap {
      * Create the LOD index array that will seam its edges with its neighbour's LOD.
      * This is a scary method!!! It will break your mind.
      *
-     * @param store to store the index buffer
      * @param lod level of detail of the mesh
      * @param rightLod LOD of the right neighbour
      * @param topLod LOD of the top neighbour
@@ -1069,7 +1069,7 @@ public class LODGeomap extends GeoMap {
      *
      * @param x local x coordinate
      * @param z local z coordinate
-     * @return
+     * @return a new array or null
      */
     protected Triangle[] getGridTrianglesAtPoint(float x, float z) {
         int gridX = (int) x;

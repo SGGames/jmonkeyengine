@@ -32,6 +32,7 @@
 package com.jme3.app;
 
 import com.jme3.app.state.AppState;
+import com.jme3.app.state.ConstantVerifierState;
 import com.jme3.audio.AudioListenerState;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
@@ -97,7 +98,8 @@ public abstract class SimpleApplication extends LegacyApplication {
     }
 
     public SimpleApplication() {
-        this(new StatsAppState(), new FlyCamAppState(), new AudioListenerState(), new DebugKeysAppState());
+        this(new StatsAppState(), new FlyCamAppState(), new AudioListenerState(), new DebugKeysAppState(),
+             new ConstantVerifierState());
     }
 
     public SimpleApplication( AppState... initialStates ) {
@@ -123,6 +125,23 @@ public abstract class SimpleApplication extends LegacyApplication {
         //re-setting settings they can have been merged from the registry.
         setSettings(settings);
         super.start();
+    }
+        
+    /**
+     * Returns the applications speed.
+     *
+     * @return The speed of the application.
+     */
+    public float getSpeed() {
+        return speed;
+    }
+    
+    /**
+     * Changes the application speed. 0.0f prevents the application from updating.
+     * @param speed The speed to set.
+     */
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 
     /**

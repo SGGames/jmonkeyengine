@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 jMonkeyEngine
+ * Copyright (c) 2009-2018 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -142,6 +142,60 @@ extern "C" {
             userPointer -> groups = groups;
         }
     }
+
+    /*
+     * Class:     com_jme3_bullet_collision_PhysicsCollisionObject
+     * Method:    getCollisionFlags
+     * Signature: (J)I
+     */
+    JNIEXPORT jint JNICALL Java_com_jme3_bullet_collision_PhysicsCollisionObject_getCollisionFlags
+    (JNIEnv *env, jobject object, jlong objectId) {
+        btCollisionObject* collisionObject = reinterpret_cast<btCollisionObject*> (objectId);
+        if (collisionObject == NULL) {
+            jclass newExc = env->FindClass("java/lang/NullPointerException");
+            env->ThrowNew(newExc, "The native object does not exist.");
+            return 0;
+        }
+
+        jint result = collisionObject->getCollisionFlags();
+        return result;
+    }
+
+    /*
+     * Class:     com_jme3_bullet_collision_PhysicsCollisionObject
+     * Method:    setCollisionFlags
+     * Signature: (JI)V
+     */
+    JNIEXPORT void JNICALL Java_com_jme3_bullet_collision_PhysicsCollisionObject_setCollisionFlags
+    (JNIEnv *env, jobject object, jlong objectId, jint desiredFlags) {
+        btCollisionObject* collisionObject = reinterpret_cast<btCollisionObject*> (objectId);
+        if (collisionObject == NULL) {
+            jclass newExc = env->FindClass("java/lang/NullPointerException");
+            env->ThrowNew(newExc, "The native object does not exist.");
+            return;
+        }
+
+        collisionObject->setCollisionFlags(desiredFlags);
+    }
+
+    /*
+     * Class:     com_jme3_bullet_collision_PhysicsCollisionObject
+     * Method:    getDeactivationTime
+     * Signature: (J)F
+     */
+    JNIEXPORT jfloat JNICALL Java_com_jme3_bullet_collision_PhysicsCollisionObject_getDeactivationTime
+    (JNIEnv *env, jobject object, jlong pcoId) {
+        btCollisionObject *pCollisionObject
+                = reinterpret_cast<btCollisionObject *> (pcoId);
+        if (pCollisionObject == NULL) {
+            jclass newExc = env->FindClass("java/lang/NullPointerException");
+            env->ThrowNew(newExc, "The native object does not exist.");
+            return 0;
+        }
+
+        jfloat result = pCollisionObject->getDeactivationTime();
+        return result;
+    }    
 
 #ifdef __cplusplus
 }

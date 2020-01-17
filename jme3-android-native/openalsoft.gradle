@@ -9,14 +9,17 @@ String openALSoftFolder = 'openal-soft-e5016f8'
 
 //Working directories for the ndk build.
 String openalsoftBuildDir = "${buildDir}" + File.separator + 'openalsoft'
+String openalsoftClassesBuildDir = "${buildDir}" + File.separator + 'openalsoft_classes'
 String openalsoftBuildJniDir = openalsoftBuildDir + File.separator + 'jni'
 String openalsoftBuildLibsDir = openalsoftBuildDir + File.separator + 'libs'
 
 //Pre-compiled libs directory
-String openalsoftPreCompiledLibsDir = 'libs' + File.separator + 'openalsoft'
+def rootPath = rootProject.projectDir.absolutePath
+String openalsoftPreCompiledLibsDir = rootPath + File.separator + 'build' + File.separator + 'native' + File.separator +  'android' + File.separator + 'openalsoft'
 
 // jME Android Native source files path
 String openalsoftJmeAndroidPath = 'src/native/jme_openalsoft'
+String jmeHeaders = 'src/native/headers'
 
 // Download external source files if not available
 task downloadOpenALSoft(type: MyDownload) {
@@ -61,8 +64,14 @@ copyOpenALSoft.dependsOn {
     }
 }
 
+// Copy JME Headers to jni directory
+task copyJmeHeadersOpenAL(type: Copy) {
+    from file(jmeHeaders)
+    into file(openalsoftBuildJniDir + File.separator + "headers")
+}
+
 // Copy jME Android native files to jni directory
-task copyJmeOpenALSoft(type: Copy, dependsOn:copyOpenALSoft) {
+task copyJmeOpenALSoft(type: Copy, dependsOn: [copyOpenALSoft, copyJmeHeadersOpenAL]) {
     def sourceDir = file(openalsoftJmeAndroidPath)
     def outputDir = file(openalsoftBuildJniDir)
 //    println "copyJmeOpenALSoft sourceDir: " + sourceDir
@@ -72,16 +81,7 @@ task copyJmeOpenALSoft(type: Copy, dependsOn:copyOpenALSoft) {
     into outputDir
 }
 
-task generateOpenAlSoftHeaders(type:Exec, dependsOn: copyJmeOpenALSoft) {
-    executable org.gradle.internal.jvm.Jvm.current().getExecutable('javah')
-    args '-d', openalsoftJmeAndroidPath
-    args '-classpath', project.projectClassPath
-    args "com.jme3.audio.android.AndroidAL"
-    args "com.jme3.audio.android.AndroidALC"
-    args "com.jme3.audio.android.AndroidEFX"
-}
-
-task buildOpenAlSoftNativeLib(type: Exec, dependsOn: generateOpenAlSoftHeaders) {
+task buildOpenAlSoftNativeLib(type: Exec, dependsOn: copyJmeOpenALSoft) {
 //    println "openalsoft build dir: " + openalsoftBuildDir
 //    println "ndkCommandPath: " + project.ndkCommandPath
     workingDir openalsoftBuildDir

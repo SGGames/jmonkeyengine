@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 jMonkeyEngine
+ * Copyright (c) 2009-2019 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.mesh.IndexBuffer;
@@ -47,7 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Basic mesh collision shape
+ * A mesh collision shape based on Bullet's btGImpactMeshShape.
+ *
  * @author normenhansen
  */
 public class GImpactCollisionShape extends CollisionShape {
@@ -55,14 +57,23 @@ public class GImpactCollisionShape extends CollisionShape {
 //    protected Vector3f worldScale;
     protected int numVertices, numTriangles, vertexStride, triangleIndexStride;
     protected ByteBuffer triangleIndexBase, vertexBase;
+    /**
+     * Unique identifier of the Bullet mesh. The constructor sets this to a
+     * non-zero value.
+     */
     protected long meshId = 0;
 //    protected IndexedMesh bulletMesh;
 
-    public GImpactCollisionShape() {
+    /**
+     * No-argument constructor needed by SavableClassUtil. Do not invoke
+     * directly!
+     */
+    protected GImpactCollisionShape() {
     }
 
     /**
-     * creates a collision shape from the given Mesh
+     * Instantiate a shape based on the specified JME mesh.
+     *
      * @param mesh the Mesh to use
      */
     public GImpactCollisionShape(Mesh mesh) {
@@ -105,6 +116,12 @@ public class GImpactCollisionShape extends CollisionShape {
 //    public Mesh createJmeMesh() {
 //        return Converter.convert(bulletMesh);
 //    }
+    /**
+     * Serialize this shape, for example when saving to a J3O file.
+     *
+     * @param ex exporter (not null)
+     * @throws IOException from exporter
+     */
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule capsule = ex.getCapsule(this);
@@ -118,6 +135,12 @@ public class GImpactCollisionShape extends CollisionShape {
         capsule.write(vertexBase.array(), "vertexBase", new byte[0]);
     }
 
+    /**
+     * De-serialize this shape, for example when loading from a J3O file.
+     *
+     * @param im importer (not null)
+     * @throws IOException from importer
+     */
     public void read(JmeImporter im) throws IOException {
         super.read(im);
         InputCapsule capsule = im.getCapsule(this);
@@ -131,7 +154,27 @@ public class GImpactCollisionShape extends CollisionShape {
         vertexBase = ByteBuffer.wrap(capsule.readByteArray("vertexBase", new byte[0]));
         createShape();
     }
+    
+    /**
+     * Alter the scaling factors of this shape.
+     * <p>
+     * Note that if the shape is shared (between collision objects and/or
+     * compound shapes) changes can have unintended consequences.
+     *
+     * @param scale the desired scaling factor for each local axis (not null, no
+     * negative component, unaffected, default=(1,1,1))
+     */
+    @Override
+    public void setScale(Vector3f scale) {
+        super.setScale(scale);
+        recalcAabb(objectId);
+    }
 
+    native private void recalcAabb(long shapeId);
+
+    /**
+     * Instantiate the configured shape in Bullet.
+     */
     protected void createShape() {
 //        bulletMesh = new IndexedMesh();
 //        bulletMesh.numVertices = numVertices;
@@ -157,6 +200,12 @@ public class GImpactCollisionShape extends CollisionShape {
 
     private native long createShape(long meshId);
 
+    /**
+     * Finalize this shape just before it is destroyed. Should be invoked only
+     * by a subclass or by the garbage collector.
+     *
+     * @throws Throwable ignored by the garbage collector
+     */
     @Override
     protected void finalize() throws Throwable {
         super.finalize();

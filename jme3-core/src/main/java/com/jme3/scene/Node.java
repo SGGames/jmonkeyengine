@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2018 jMonkeyEngine
+ * Copyright (c) 2009-2019 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,15 +31,14 @@
  */
 package com.jme3.scene;
 
+import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResults;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
-import com.jme3.export.Savable;
 import com.jme3.material.Material;
 import com.jme3.util.SafeArrayList;
-import com.jme3.util.TempVars;
 import com.jme3.util.clone.Cloner;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,7 +83,7 @@ public class Node extends Spatial {
     private boolean updateListValid = false;
 
     /**
-     * Serialization only. Do not use.
+     * Instantiate a <code>Node</code> with no name, no parent, and no children.
      */
     public Node() {
         this(null);
@@ -94,8 +93,7 @@ public class Node extends Spatial {
      * Constructor instantiates a new <code>Node</code> with a default empty
      * list for containing children.
      *
-     * @param name the name of the scene element. This is required for
-     * identification and comparison purposes.
+     * @param name the name of the scene element
      */
     public Node(String name) {
         super(name);
@@ -169,6 +167,9 @@ public class Node extends Spatial {
                     resultBound = child.getWorldBound().clone(this.worldBound);
                 }
             }
+        }
+        if (resultBound == null) {
+            resultBound = new BoundingBox(getWorldTranslation(), 0f, 0f, 0f);
         }
         this.worldBound = resultBound;
     }
@@ -343,10 +344,13 @@ public class Node extends Spatial {
      * @throws NullPointerException if child is null.
      */
     public int attachChildAt(Spatial child, int index) {
-        if (child == null)
-            throw new NullPointerException();
-
-        if (child.getParent() != this && child != this) {
+        if (child == null) {
+            throw new IllegalArgumentException("child cannot be null");
+        }
+        if (child == this) {
+            throw new IllegalArgumentException("Cannot add child to itself");
+        }            
+        if (child.getParent() != this) {
             if (child.getParent() != null) {
                 child.getParent().detachChild(child);
             }
@@ -769,20 +773,22 @@ public class Node extends Spatial {
             }
         }
     }
+
     @Override
     public void depthFirstTraversal(SceneGraphVisitor visitor, DFSMode mode) {
         if (mode == DFSMode.POST_ORDER) {
             for (Spatial child : children.getArray()) {
-                child.depthFirstTraversal(visitor);
+                child.depthFirstTraversal(visitor, mode);
             }
             visitor.visit(this);
         } else { //pre order
             visitor.visit(this);
             for (Spatial child : children.getArray()) {
-                child.depthFirstTraversal(visitor);
+                child.depthFirstTraversal(visitor, mode);
             }
         }
     }
+
     @Override
     protected void breadthFirstTraversal(SceneGraphVisitor visitor, Queue<Spatial> queue) {
         queue.addAll(children);

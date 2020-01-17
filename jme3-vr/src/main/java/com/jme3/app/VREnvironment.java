@@ -10,6 +10,9 @@ import com.jme3.input.vr.VRBounds;
 import com.jme3.input.vr.VRInputAPI;
 import com.jme3.input.vr.VRMouseManager;
 import com.jme3.input.vr.VRViewManager;
+import com.jme3.input.vr.lwjgl_openvr.LWJGLOpenVR;
+import com.jme3.input.vr.lwjgl_openvr.LWJGLOpenVRMouseManager;
+import com.jme3.input.vr.lwjgl_openvr.LWJGLOpenVRViewManager;
 import com.jme3.input.vr.oculus.OculusMouseManager;
 import com.jme3.input.vr.oculus.OculusVR;
 import com.jme3.input.vr.oculus.OculusViewManager;
@@ -97,7 +100,6 @@ public class VREnvironment {
 	
 	/**
 	 * Set the VR bounds.
-	 * @return the VR bounds.
 	 * @see #getVRBounds()
 	 */
 	public void setVRBounds(VRBounds bounds){
@@ -166,6 +168,10 @@ public class VREnvironment {
             } else {
                 ((OpenVR)hardware).getCompositor().SetTrackingSpace.apply(JOpenVRLibrary.ETrackingUniverseOrigin.ETrackingUniverseOrigin_TrackingUniverseStanding);                
             }        
+        } else if (hardware instanceof LWJGLOpenVR) {
+        	if( ((LWJGLOpenVR)hardware).isInitialized() ) {
+            	((LWJGLOpenVR)hardware).setTrackingSpace(seated);
+            }
         }
     }
     
@@ -406,6 +412,8 @@ public class VREnvironment {
     		viewmanager = new OSVRViewManager(this);
     	} else if (vrBinding == VRConstants.SETTING_VRAPI_OCULUSVR_VALUE) {
     		viewmanager = new OculusViewManager(this);
+    	} else if (vrBinding == VRConstants.SETTING_VRAPI_OPENVR_LWJGL_VALUE) {
+    		viewmanager = new LWJGLOpenVRViewManager(this);
     	} else {
     		logger.severe("Cannot instanciate view manager, unknown VRAPI type: "+vrBinding);
     	}
@@ -425,9 +433,14 @@ public class VREnvironment {
         // we are going to use OpenVR now, not the Oculus Rift
         // OpenVR does support the Rift
         String OS     = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-        vrSupportedOS = !OS.contains("nux") && System.getProperty("sun.arch.data.model").equalsIgnoreCase("64"); //for the moment, linux/unix causes crashes, 64-bit only
-        compositorOS  = OS.contains("indows");
-        
+        vrSupportedOS = System.getProperty("sun.arch.data.model").equalsIgnoreCase("64"); //64-bit only
+        compositorOS  = OS.contains("indows") || OS.contains("nux");
+
+        if (OS.contains("nux") && vrBinding != VRConstants.SETTING_VRAPI_OPENVR_LWJGL_VALUE){
+        	logger.severe("Only LWJGL VR backend is currently (partially) supported on Linux.");
+        	vrSupportedOS = false;
+        }
+
         if( vrSupportedOS) {
         	if( vrBinding == VRConstants.SETTING_VRAPI_OSVR_VALUE ) {
         		
@@ -453,6 +466,14 @@ public class VREnvironment {
                 hardware = new OculusVR(this);
             	initialized = true;
             	logger.config("Creating Occulus Rift wrapper [SUCCESS]");
+            } else if (vrBinding == VRConstants.SETTING_VRAPI_OPENVR_LWJGL_VALUE) {
+            	
+            	guiManager   = new VRGuiManager(this);
+                mouseManager = new LWJGLOpenVRMouseManager(this);
+
+            	hardware = new LWJGLOpenVR(this);
+            	initialized = true;
+                logger.config("Creating OpenVR/LWJGL wrapper [SUCCESS]");
             } else {
             	logger.config("Cannot create VR binding: "+vrBinding+" [FAILED]");
             	logger.log(Level.SEVERE, "Cannot initialize VR environment [FAILED]");

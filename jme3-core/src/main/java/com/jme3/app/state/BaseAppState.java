@@ -78,6 +78,14 @@ public abstract class BaseAppState implements AppState {
     private Application app;
     private boolean initialized;
     private boolean enabled = true;
+    private String id;
+
+    protected BaseAppState() {
+    }
+    
+    protected BaseAppState( String id ) {
+        this.id = id;
+    }
 
     /**
      *  Called during initialization once the app state is
@@ -133,6 +141,20 @@ public abstract class BaseAppState implements AppState {
         return initialized;
     }
 
+    /**
+     *  Sets the unique ID of this app state.  Note: that setting
+     *  this while an app state is attached to the state manager will
+     *  have no effect on ID-based lookups.
+     */
+    protected void setId( String id ) {
+        this.id = id;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
     public final Application getApplication() {
         return app;
     }
@@ -142,7 +164,11 @@ public abstract class BaseAppState implements AppState {
     }
 
     public final <T extends AppState> T getState( Class<T> type ) {
-        return getStateManager().getState(type);
+        return getState( type, false );
+    }
+    
+    public final <T extends AppState> T getState( Class<T> type, boolean failOnMiss ) {
+        return getStateManager().getState( type, failOnMiss );
     }
 
     @Override

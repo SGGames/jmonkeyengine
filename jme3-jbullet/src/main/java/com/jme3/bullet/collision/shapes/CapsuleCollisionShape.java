@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 jMonkeyEngine
+ * Copyright (c) 2009-2019 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,10 +39,7 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
-import com.jme3.math.Vector3f;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Basic capsule collision shape
@@ -52,7 +49,7 @@ public class CapsuleCollisionShape extends CollisionShape{
     protected float radius,height;
     protected int axis;
 
-    public CapsuleCollisionShape() {
+    protected CapsuleCollisionShape() {
     }
 
     /**

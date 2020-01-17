@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 jMonkeyEngine
+ * Copyright (c) 2009-2019 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ public class GImpactCollisionShape extends CollisionShape{
     protected ByteBuffer triangleIndexBase, vertexBase;
     protected IndexedMesh bulletMesh;
 
-    public GImpactCollisionShape() {
+    protected GImpactCollisionShape() {
     }
 
     /**
@@ -125,9 +125,14 @@ public class GImpactCollisionShape extends CollisionShape{
         TriangleIndexVertexArray tiv = new TriangleIndexVertexArray(numTriangles, triangleIndexBase, triangleIndexStride, numVertices, vertexBase, vertexStride);
         cShape = new GImpactMeshShape(tiv);
         cShape.setLocalScaling(Converter.convert(worldScale));
-        ((GImpactMeshShape)cShape).updateBound();
         cShape.setLocalScaling(Converter.convert(getScale()));
         cShape.setMargin(margin);
+        ((GImpactMeshShape) cShape).updateBound();
     }
 
+    @Override
+    public void setScale(Vector3f scale) {
+        super.setScale(scale);
+        ((GImpactMeshShape) cShape).updateBound();
+    }
 }

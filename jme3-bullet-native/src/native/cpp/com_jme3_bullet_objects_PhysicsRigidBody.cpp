@@ -52,9 +52,7 @@ extern "C" {
         btMotionState* motionState = reinterpret_cast<btMotionState*>(motionstatId);
         btCollisionShape* shape = reinterpret_cast<btCollisionShape*>(shapeId);
         btVector3 localInertia = btVector3();
-	if(mass > 0){
-	        shape->calculateLocalInertia(mass, localInertia);
-	}
+        shape->calculateLocalInertia(mass, localInertia);
         btRigidBody* body = new btRigidBody(mass, motionState, shape, localInertia);
         body->setUserPointer(NULL);
         return reinterpret_cast<jlong>(body);
@@ -795,7 +793,7 @@ extern "C" {
             env->ThrowNew(newExc, "The native object does not exist.");
             return;
         }
-        body->setSleepingThresholds(value, body->getLinearSleepingThreshold());
+        body->setSleepingThresholds(value, body->getAngularSleepingThreshold());
     }
 
     /*
@@ -811,7 +809,7 @@ extern "C" {
             env->ThrowNew(newExc, "The native object does not exist.");
             return;
         }
-        body->setSleepingThresholds(body->getAngularSleepingThreshold(), value);
+        body->setSleepingThresholds(body->getLinearSleepingThreshold(), value);
     }
 
     /*

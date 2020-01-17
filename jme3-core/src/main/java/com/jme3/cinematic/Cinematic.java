@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 jMonkeyEngine
+ * Copyright (c) 2009-2019 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,13 +41,10 @@ import com.jme3.cinematic.events.CinematicEvent;
 import com.jme3.export.*;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
-import com.jme3.renderer.ViewPort;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.control.CameraControl.ControlDirection;
-import com.jme3.scene.control.Control;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,12 +99,13 @@ public class Cinematic extends AbstractCinematicEvent implements AppState {
     private boolean initialized = false;
     private Map<String, Map<Object, Object>> eventsData;
     private float nextEnqueue = 0;
+    private String id;
 
     /**
      * Used for serialization creates a cinematic, don't use this constructor
      * directly
      */
-    public Cinematic() {
+    protected Cinematic() {
         super();
     }
 
@@ -288,10 +286,24 @@ public class Cinematic extends AbstractCinematicEvent implements AppState {
     /**
      * used internally
      *
-     * @return
+     * @return true if initialized, otherwise false
      */
     public boolean isInitialized() {
         return initialized;
+    }
+
+    /**
+     *  Sets the unique ID of this app state.  Note: that setting
+     *  this while an app state is attached to the state manager will
+     *  have no effect on ID-based lookups.
+     */
+    protected void setId( String id ) {
+        this.id = id;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     /**
@@ -639,7 +651,7 @@ public class Cinematic extends AbstractCinematicEvent implements AppState {
      *
      * @param type the type of data
      * @param key the key
-     * @return
+     * @return the pre-existing object, or null
      */
     public Object getEventData(String type, Object key) {
         if (eventsData != null) {

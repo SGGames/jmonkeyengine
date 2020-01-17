@@ -1,16 +1,12 @@
 package org.jmonkeyengine.jme3androidexamples;
 
 import android.os.Bundle;
-import android.util.Log;
 import com.jme3.app.AndroidHarnessFragment;
-
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-import static org.jmonkeyengine.jme3androidexamples.MainActivity.*;
-
 /**
- * A placeholder fragment containing a the jME GLSurfaceView.
+ * A placeholder fragment containing a jME GLSurfaceView.
  */
 public class JmeFragment extends AndroidHarnessFragment {
 
@@ -66,15 +62,15 @@ public class JmeFragment extends AndroidHarnessFragment {
     public void onCreate(Bundle savedInstanceState) {
         Bundle bundle=getArguments();
 
-        appClass = bundle.getString(SELECTED_APP_CLASS);
+        appClass = bundle.getString(MainActivity.SELECTED_APP_CLASS);
 //        Log.d(this.getClass().getSimpleName(), "AppClass: " + appClass);
-        joystickEventsEnabled = bundle.getBoolean(ENABLE_JOYSTICK_EVENTS);
+        joystickEventsEnabled = bundle.getBoolean(MainActivity.ENABLE_JOYSTICK_EVENTS);
 //        Log.d(this.getClass().getSimpleName(), "JoystickEventsEnabled: " + joystickEventsEnabled);
-        keyEventsEnabled = bundle.getBoolean(ENABLE_KEY_EVENTS);
+        keyEventsEnabled = bundle.getBoolean(MainActivity.ENABLE_KEY_EVENTS);
 //        Log.d(this.getClass().getSimpleName(), "KeyEventsEnabled: " + keyEventsEnabled);
-        mouseEventsEnabled = bundle.getBoolean(ENABLE_MOUSE_EVENTS);
+        mouseEventsEnabled = bundle.getBoolean(MainActivity.ENABLE_MOUSE_EVENTS);
 //        Log.d(this.getClass().getSimpleName(), "MouseEventsEnabled: " + mouseEventsEnabled);
-        boolean verboseLogging = bundle.getBoolean(VERBOSE_LOGGING);
+        boolean verboseLogging = bundle.getBoolean(MainActivity.VERBOSE_LOGGING);
 //        Log.d(this.getClass().getSimpleName(), "VerboseLogging: " + verboseLogging);
         if (verboseLogging) {
             // Set the default logging level (default=Level.INFO, Level.ALL=All Debug Info)

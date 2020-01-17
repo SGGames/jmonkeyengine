@@ -7,10 +7,6 @@ if (!hasProperty('mainClass')) {
 task run(dependsOn: 'build', type:JavaExec) {
     main = mainClass
     classpath = sourceSets.main.runtimeClasspath
-    if (System.properties['os.name'].toLowerCase().contains('mac')) {
-        jvmArgs "-XstartOnFirstThread"
-        jvmArgs "-Djava.awt.headless=true"
-    }
 
     if (System.properties['java.util.logging.config.file'] != null) {
         systemProperty "java.util.logging.config.file", System.properties['java.util.logging.config.file']
@@ -26,9 +22,12 @@ dependencies {
     compile project(':jme3-core')
     compile project(':jme3-desktop')
     compile project(':jme3-effects')
-//    compile project(':jme3-bullet')
-//    compile project(':jme3-bullet-native')
-    compile project(':jme3-jbullet')
+
+    // EITHER use jme3-bullet + jme3-bullet-native OR ELSE jme3-jbullet
+    compile project(':jme3-bullet')
+    compile project(':jme3-bullet-native')
+//    compile project(':jme3-jbullet')
+
     compile project(':jme3-jogg')
     compile project(':jme3-jogl')
     compile project(':jme3-lwjgl')
